@@ -3,15 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-
+use App\Enums\User\Role;
 class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens,HasUlids, HasFactory, Notifiable;
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -20,7 +21,9 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [
-            'name' => $this->name
+            'email' => $this->email,
+            'name' => $this->firstName.' '. $this->lastName,
+            'role' => $this->role
         ];
     }
     /**
@@ -28,8 +31,11 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
+    protected $table= 'users';
     protected $fillable = [
-        'name',
+        'id',
+        'firstName',
+        'lastName',
         'email',
         'password',
         'role'
@@ -53,4 +59,12 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getRoleAttribute($value){
+        return $value=='0'?'ADMIN':'USER';
+    }
+
+    public function albums(){
+        return $this->belongsToMany(Album::class,"user_album")->withPivot('isUserOwner')->withTimestamps();
+    }
 }

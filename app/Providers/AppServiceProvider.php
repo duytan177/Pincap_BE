@@ -2,8 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Repositories\AuthRepo\AuthRepo;
+use App\Repositories\AuthRepo\AuthRepoInterface;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
+use TimWassenburg\RepositoryGenerator\Repository\BaseRepository;
+use TimWassenburg\RepositoryGenerator\Repository\EloquentRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
+        $this->app->bind(EloquentRepositoryInterface::class,BaseRepository::class);
+        $this->app->bind(AuthRepoInterface::class,AuthRepo::class);
+
     }
 
     /**

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\Album_Media\Privacy;
 
 return new class extends Migration
 {
@@ -13,15 +14,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id('id');
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+        Schema::create('albums', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('albumName');
+            $table->longText('imageCover');
+            $table->text('description')->nullable();
+            $table->enum('privacy',Privacy::getValues())->default(Privacy::PUBLIC);
             $table->timestamps();
-            
         });
     }
 
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('albums');
     }
 };

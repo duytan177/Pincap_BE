@@ -13,9 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-            $table->enum('role',\App\Enums\UserRole::getValues())->default(\App\Enums\UserRole::USER);
+        Schema::create('tags', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('tagName')->unique();
+            $table->foreignUuid('ownerUserCreated_id')->references('id')->on('users');
+            $table->timestamps();
         });
     }
 
@@ -26,9 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-            Schema::dropColumns('role');
-        });
+        Schema::dropIfExists('tag');
     }
 };

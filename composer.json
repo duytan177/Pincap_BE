@@ -11,6 +11,10 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "league/flysystem-aws-s3-v3": "^3.19",
+        "ramsey/uuid": "^4.7",
+        "stechstudio/laravel-zipstream": "^4.13",
+        "timwassenburg/laravel-repository-generator": "^1.0",
         "tymon/jwt-auth": "^2.0"
     },
     "require-dev": {
