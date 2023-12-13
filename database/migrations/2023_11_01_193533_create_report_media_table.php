@@ -16,10 +16,11 @@ return new class extends Migration
     {
         Schema::create('report_media', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('title');
-            $table->enum('state',StateReport::getValues())->default(StateReport::PROCESSING);
-            $table->foreignUuid('user_report_id')->references('id')->on('users');
+            $table->enum('state',StateReport::getValues())->default(StateReport::UNPROCESSED);
+            $table->foreignUuid('user_id')->references('id')->on('users');
             $table->foreignUuid('media_id')->references('id')->on('medias');
+            $table->foreignUuid('reason_report_id')->nullable()->references('id')->on('reasons_report');
+            $table->text("other_reasons")->nullable();
             $table->timestamps();
         });
     }

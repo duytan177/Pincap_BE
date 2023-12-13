@@ -39,7 +39,16 @@ class Media extends Model
     public function albums(){
         return $this->belongsToMany(Album::class,'album_media')->withTimestamps();
     }
+    public function tags(){
+        return $this->belongsToMany(Tag::class,'media_tag')->withTimestamps();
+    }
 
+    public function userOwner(){
+        return $this->belongsTo(User::class,'mediaOwner_id','id');
+    }
 
+    public function mediaReported(){
+        return $this->belongsToMany(User::class,'media_report')->withPivot(["state","report_reason_id","other_reasons"])->withTimestamps();
+    }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Album_Media\Privacy;
 use App\Enums\Album_Media\MediaType;
+use App\Http\Requests\MediaRequest;
 use App\Models\Album;
 use App\Models\AlbumMedia;
 use App\Models\Media;
@@ -11,6 +12,8 @@ use App\Repositories\MediaRepo\MediaRepo;
 use App\Repositories\TagRepo\TagRepo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Ramsey\Uuid\Guid\Guid;
 use ZipArchive;
 
@@ -29,11 +32,7 @@ class MediaController extends Controller
      */
     public function index()
     {
-//        $listMedia = $this->mediaRepo->all(["*"],[
-//            "isDeleted" => 0
-//        ])->;
-        //getx`
-        $listMedia = Media::paginate(3);
+        $listMedia = $this->mediaRepo->paginate(5,['albums','userOwner','mediaReported']);
         return response()->json([
             'listMedia' => $listMedia
         ],200);
@@ -56,30 +55,30 @@ class MediaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(MediaRequest $request)
     {
-
         //Get request file after upload to file AWS s3 and return url file
         $file = $request->file('medias');
         $mediaURL = $this->uploadMediaToS3($file);
-        //save medias to database in laravel
+//        //save medias to database in laravel
         $dataAll= $request->except(["medias",'album_id']);
         $dataAll['mediaURL'] = $mediaURL;
         $mediaNew = $this->mediaRepo->create($dataAll);
-
         if(!$mediaNew)    {
             return response()->json([
                 'message' => "Created media failed",
             ],400);
         }
         if($dataAll['tagName']){
-            $tag = $this->tagRepo->create([
-                "tagName" => $dataAll['tagName'],
-                "ownerUserCreated_id" => $mediaNew->mediaOwner_id
-            ]);
-            $tag->medias()->attach([
-                $mediaNew->id => ['id' => Guid::uuid4()->toString()]
-            ]);
+            foreach ($dataAll['tagName'] as $key => $value){
+                $tag = $this->tagRepo->create([
+                    "tagName" => $value,
+                    "ownerUserCreated_id" => $mediaNew->mediaOwner_id
+                ]);
+                $tag->medias()->attach([
+                    $mediaNew->id => ['id' => Guid::uuid4()->toString()]
+                ]);
+            }
         }
         if($request->album_id){
             $mediaNew->albums()->attach([
@@ -160,6 +159,26 @@ class MediaController extends Controller
         ],400);
 
     }
+
+    public function findMediaByTag(Request $request){
+        $param = [
+            "tagName"
+        ];
+        $keyword = $request->input("searchMedia");
+        $tag = $this->tagRepo->findByField($param,$keyword,2,['medias']);
+        if($tag->isEmpty()){
+            return response()->json([
+                "message" => "No search medias"
+            ],404);
+        }else{
+            return response()->json([
+                "medias" => $tag
+            ],200);
+        }
+    }
+
+
+
 
     public function downloadMedias(Request $request){
         $pathFromS3 = $this->extractPathFromS3URLs($request->URLs);

@@ -3,18 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\UserAlbum;
 use App\Repositories\AlbumRepo\AlbumRepo;
+use App\Repositories\MediaRepo\MediaRepo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Guid\Guid;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AlbumController extends Controller
 {
     protected $albumRepo;
-    public function __construct(AlbumRepo $albumRepo)
+    protected $mediaRepo;
+    public function __construct(AlbumRepo $albumRepo,MediaRepo $mediaRepo)
     {
         $this->albumRepo = $albumRepo;
+        $this->mediaRepo = $mediaRepo;
 //        $this->middleware('checkRole')->only(['store','index']);
 
     }
@@ -24,9 +29,9 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $listAlbums = Album::with('medias')->get();
+        $listAlbums = $this->albumRepo->paginate(5,['userOwner','medias']);
         return response()->json([
-            'listAlbums' => $listAlbums
+            'listAlbums' => UserAlbum::all()
         ],200);
     }
 
@@ -68,7 +73,7 @@ class AlbumController extends Controller
      */
     public function show($id)
     {
-        $detailAlbum = Album::with(['userOwner','medias'])->find($id);
+        $detailAlbum = $this->albumRepo->find($id,['medias']);
         return response()->json([
             "detailAlbum" => $detailAlbum
         ],200);
@@ -80,8 +85,8 @@ class AlbumController extends Controller
     public function edit($id)
     {
         //
-        $detailAlbum = $this->albumRepo->find($id);
-        return response()->json([
+        $detailAlbum = $this->albumRepo->find($id,["medias"]);
+        return response()->json ([
             'detailAlbum' => $detailAlbum
         ],200);
     }
@@ -115,9 +120,14 @@ class AlbumController extends Controller
      */
     public function destroy($id)
     {
-        $album = Album::with("medias")->find($id);
+        $album = $this->albumRepo->find($id,["medias"]);
         if($album){
             //deleted relationship album and medias after deleted album
+            $medias = $album->medias;
+            foreach ($medias as $key => $value){
+                $media =  $this->mediaRepo->find($value->id);
+                $this->mediaRepo->update($media->id,['isDeleted' => 1]);
+            }
             $album->medias()->detach();
             $this->albumRepo->delete($id);
             return response()->json([
@@ -125,15 +135,50 @@ class AlbumController extends Controller
             ],200);
         }
         return response()->json([
-            "message" => "No deleted album"
+            "message" => "Deleted album faired"
         ],400);
     }
 
-    public function addUsersToJoinAlbum(Request $request,$id){
-        $listUsersId = $request->listUsers_id;
-        foreach ($listUsersId as $key => $listUserId){
-
+    public function addUsersToJoinAlbum(Request $request,$album_id){
+        //validator request before handle data
+        $validator = Validator::make($request->all(), [
+            'listUsers_id.*' => 'required|unique:user_album,user_id',
+        ]);
+        //check request has any errors then return messages errors
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ],400);
         }
-        return $listUsersId;
+        $listUsersId = $request->listUsers_id;
+        $album = $this->albumRepo->find($album_id);
+        foreach ($listUsersId as $key => $listUserId){
+            $album->userOwner()->attach([
+                $listUserId => [
+                    'id' => Guid::uuid4()->toString(),
+                    "created_at"=> now()
+                ]
+            ]);
+        }
+        return response()->json([
+            "message" => "invitation sent successfully"
+        ],200);
+    }
+
+    public function archive(Request $request){
+        $album_id = $request->input("album_id");
+
+        $album = $this->albumRepo->find($album_id);
+        $album->isArchived?$isArchived = 0:$isArchived = 1;
+        if($this->albumRepo->update($album_id,["isArchived" => $isArchived])){
+            return response()->json([
+                "message"=>"successfully"
+            ],200);
+        }else{
+            return response()->json([
+                "message"=>"fairled"
+            ],200);
+        }
     }
 }

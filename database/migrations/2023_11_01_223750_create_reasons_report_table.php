@@ -13,10 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tags', function (Blueprint $table) {
+        Schema::create('reasons_report', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('tagName')->unique();
-            $table->foreignUuid('ownerUserCreated_id')->references('id')->on('users');
+            $table->string("title");
+            $table->text("description");
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tags');
+        Schema::dropIfExists('reasons_report');
     }
 };

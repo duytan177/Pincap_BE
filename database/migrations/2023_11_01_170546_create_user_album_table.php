@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\Album_Media\InvitationStatus;
 
 return new class extends Migration
 {
@@ -15,9 +16,9 @@ return new class extends Migration
     {
         Schema::create('user_album', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->boolean("isUserOwner")->default(false);
             $table->foreignUuid('user_id')->references('id')->on('users');
             $table->foreignUuid('album_id')->references('id')->on('albums');
+            $table->enum('invitation_status',InvitationStatus::getValues())->default(InvitationStatus::INVITED);
             $table->timestamps();
         });
     }

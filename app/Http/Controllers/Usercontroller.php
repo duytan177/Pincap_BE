@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Role;
+use App\Models\ReportReason;
+use App\Models\MediaReport;
 use App\Models\User;
 use App\Repositories\UserRepo\UserRepo;
 use BenSampo\Enum\Rules\Enum;
@@ -19,7 +21,7 @@ class Usercontroller extends Controller
     public function index()
     {
         $listUser = $this->userRepo->all();
-//        $listUser = User::with('userOwner')->get();
+        $listUser = User::with(['albums','tags','mediaOwner','reportMedias'])->get();
         return response()->json([
             'listUser' => $listUser
         ],200);
@@ -106,12 +108,11 @@ class Usercontroller extends Controller
         ], 400);
     }
 
-    public function reportMedia($userId,$mediaId){
-
-        return response()->json([
-            "userId" => $userId,
-            "mediaId" => $mediaId
-        ],200);
+    public function findUser(Request $request){
+        $params = [
+            'email',
+            'firstName'
+        ];
+        return $this->userRepo->findByField($params,$request->input('searchUser'));
     }
-
 }

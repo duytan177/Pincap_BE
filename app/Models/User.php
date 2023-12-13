@@ -67,4 +67,16 @@ class User extends Authenticatable implements JWTSubject
     public function albums(){
         return $this->belongsToMany(Album::class,"user_album")->withPivot('isUserOwner')->withTimestamps();
     }
+
+    public function mediaOwner(){
+        return $this->hasMany(Media::class,'mediaOwner_id','id');
+    }
+
+    public function tags(){
+        return $this->hasMany(Tag::class,'ownerUserCreated_id','id');
+    }
+
+    public function reportMedias(){
+        return $this->belongsToMany(Media::class,'report_media');
+    }
 }
