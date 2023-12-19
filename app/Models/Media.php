@@ -36,6 +36,13 @@ class Media extends Model
         return $value=='0'?'PRIVATE':'PUBLIC';
     }
 
+    public function  userComments(){
+        return $this->belongsToMany(User::class,'comments')->withPivot(["content",'id'])->withTimestamps();
+    }
+    public function reactionUser(){
+        return $this->belongsToMany(User::class,"reaction_media")->withPivot(["feeling_id"])->withTimestamps();
+    }
+
     public function albums(){
         return $this->belongsToMany(Album::class,'album_media')->withTimestamps();
     }

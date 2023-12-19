@@ -29,9 +29,9 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $listAlbums = $this->albumRepo->paginate(5,['userOwner','medias']);
+        $listAlbums = $this->albumRepo->paginate(5,['members','userOwner','medias']);
         return response()->json([
-            'listAlbums' => UserAlbum::all()
+            'listAlbums' => $listAlbums
         ],200);
     }
 
@@ -50,22 +50,14 @@ class AlbumController extends Controller
     {
         $requestDataAll = $request->all();
         $album = $this->albumRepo->create($requestDataAll);
-        if(!$requestDataAll['albumOwner_id']){
-            return response()->json([
-                'message' => "Created album failed"
-            ],400);
-        }
-        $album->userOwner()->attach([
-            $requestDataAll['albumOwner_id'] => [
-                'id' => Guid::uuid4()->toString(),
-                'isUserOwner' => True
-            ]
-        ]);
         if($album){
             return response()->json([
                 'data' => $album
             ],200);
         }
+        return response()->json([
+            'message' => "Created album failed"
+        ],400);
     }
 
     /**
@@ -120,14 +112,18 @@ class AlbumController extends Controller
      */
     public function destroy($id)
     {
-        $album = $this->albumRepo->find($id,["medias"]);
+        $album = $this->albumRepo->find($id,["medias","members"]);
+
         if($album){
             //deleted relationship album and medias after deleted album
             $medias = $album->medias;
-            foreach ($medias as $key => $value){
-                $media =  $this->mediaRepo->find($value->id);
-                $this->mediaRepo->update($media->id,['isDeleted' => 1]);
-            }
+            $members = $album->members;
+//            foreach ($medias as $key => $value){
+//                $media =  $this->mediaRepo->find($value->id);
+//                $this->mediaRepo->update($media->id,['isDeleted' => 1]);
+//            }
+
+            $album->members()->detach();
             $album->medias()->detach();
             $this->albumRepo->delete($id);
             return response()->json([
@@ -168,7 +164,6 @@ class AlbumController extends Controller
 
     public function archive(Request $request){
         $album_id = $request->input("album_id");
-
         $album = $this->albumRepo->find($album_id);
         $album->isArchived?$isArchived = 0:$isArchived = 1;
         if($this->albumRepo->update($album_id,["isArchived" => $isArchived])){

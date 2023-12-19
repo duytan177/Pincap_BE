@@ -2,11 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReactionComment;
+use App\Repositories\CommentRepo\CommentRepo;
+use App\Repositories\ReactionCommentRepo\ReactionCommentRepo;
 use Illuminate\Http\Request;
 
 class ReactionCommentController extends Controller
 {
+    protected $reactionCommentRepo;
+    protected $commentRepo;
+    public function __construct(ReactionCommentRepo $reactionCommentRepo,CommentRepo $commentRepo)
+    {
+        $this->reactionCommentRepo = $reactionCommentRepo;
+        $this->commentRepo = $commentRepo;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -16,68 +25,60 @@ class ReactionCommentController extends Controller
         return response()->json(3);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         //
+        $data =$request->all();
+        if(!($reaction = $this->reactionCommentRepo->create($data))){
+            return response()->json([
+                "error" => "Error reaciton"
+            ],400);
+        }
+        return response()->json([
+            "message" => "Reaction successfully",
+            "reaction" => $reaction
+        ],200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\ReactionComment  $reactionComment
-     * @return \Illuminate\Http\Response
-     */
-    public function show(ReactionComment $reactionComment)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ReactionComment  $reactionComment
-     * @return \Illuminate\Http\Response
      */
-    public function edit(ReactionComment $reactionComment)
+    public function show($id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ReactionComment  $reactionComment
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, ReactionComment $reactionComment)
-    {
-        //
+        $reactionComment = $this->reactionCommentRepo->all([
+            'reaction',
+            'userReaction' => ['id','firstName','lastName','email']],
+            ['*'],
+            ["comment_id" => $id]
+        );
+        return response()->json([
+            'reactionMedia' => $reactionComment,
+            'countReaction' => count($reactionComment)
+        ],200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\ReactionComment  $reactionComment
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(ReactionComment $reactionComment)
+    public function destroy($id)
+    {
+        //
+        if($this->reactionCommentRepo->delete($id)){
+            return response()->json([
+                "message" => "Delete reaction comment successfully"
+            ],200);
+        }
+        return response()->json([
+            "error" => "Delete reaction comment failed"
+        ],400);
+    }
+    public function update(Request $request,  $id)
     {
         //
     }

@@ -12,6 +12,11 @@ class Feeling extends Model
     use HasFactory,HasUlids,Notifiable;
     protected $fillable = [
         'id',
-        'feeling_type'
+        'feeling_type',
+        'icon_url'
     ];
+
+    public function reactionMedia(){
+        return $this->hasMany(ReactionMedia::class,'feeling_id','id');
+    }
 }

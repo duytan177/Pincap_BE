@@ -3,14 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reply;
+use App\Repositories\CommentRepo\CommentRepo;
+use App\Repositories\ReplyRepo\ReplyRepo;
 use Illuminate\Http\Request;
 
 class ReplyController extends Controller
 {
+    protected $replyRepo;
+
+
+    public function __construct(ReplyRepo $replyRepo,)
+    {
+        $this->replyRepo = $replyRepo;
+    }
+
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -18,69 +26,64 @@ class ReplyController extends Controller
         return response()->json(2);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+    public function show($id){
+        $replies = $this->replyRepo->all(["userRelies"],["*"],["comment_id" => $id]);
+        return response()->json([
+            "replies" => $replies
+        ],200);
     }
-
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         //
+        $data = $request->all();
+        if(!($reply = $this->replyRepo->create($data))){
+            return response()->json([
+                "error" => "Reply faired"
+            ],200);
+        }
+        return response()->json([
+            "message" => "Reply successfully",
+            "reply" => $reply
+        ],200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Reply  $reply
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Reply $reply)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Reply  $reply
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Reply $reply)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Reply  $reply
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Reply $reply)
+    public function update(Request $request, $id)
     {
         //
+        if(!$id){
+            return response()->json([
+                "error" => "Reply find faired"
+            ],400);
+        }
+        $data = $request->all();
+        $this->replyRepo->update($id,$data);
+        return  response()->json([
+            "message" => "update reply"
+        ],200);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Reply  $reply
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(Reply $reply)
+    public function destroy($id)
     {
         //
+        if($this->replyRepo->delete($id)){
+            return response()->json([
+                "message" => "Delete reply successfully"
+            ],200);
+        }
+        return response()->json([
+            "error" => "Delete reply faired"
+        ],400);
+
     }
 }

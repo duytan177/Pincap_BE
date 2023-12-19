@@ -13,12 +13,12 @@ use TimWassenburg\RepositoryGenerator\Repository\BaseRepository;
 class FeelingRepo extends BaseRepository implements FeelingRepoInterface
 {
     /**
-     * UserRepository constructor.
-     *
-     * @param Feeling $model
+
      */
+    protected $feeling;
     public function __construct(Feeling $model)
     {
+        $this->feeling = $model;
         parent::__construct($model);
     }
 

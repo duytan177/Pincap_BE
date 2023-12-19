@@ -18,7 +18,8 @@ class Album extends Model
         'imageCover',
         'description',
         'privacy',
-        'isArchived'
+        'isArchived',
+        'user_id',
     ];
     protected $hidden=[];
 
@@ -26,11 +27,12 @@ class Album extends Model
     {
         return $value=='0'?'PRIVATE':'PUBLIC';
     }
-
-
+    public function members(){
+        return $this->belongsToMany(User::class,"user_album")->withPivot("invitation_status")->withTimestamps();
+    }
 
     public function userOwner(){
-        return $this->belongsToMany(User::class,"user_album")->withPivot(["isUserOwner","invitation_status"])->withTimestamps();
+        return $this->belongsTo(User::class,"user_id",'id');
     }
     public function medias(){
         return $this->belongsToMany(Media::class,'album_media')->withTimestamps();

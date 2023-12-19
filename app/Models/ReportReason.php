@@ -11,7 +11,7 @@ class ReportReason extends Model
 {
     use HasFactory,HasUlids,Notifiable;
 
-    protected $table='report_reasons';
+    protected $table='reasons_report';
     protected $fillable = [
         'id',
         'title',

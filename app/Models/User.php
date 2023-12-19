@@ -64,9 +64,13 @@ class User extends Authenticatable implements JWTSubject
         return $value=='0'?'ADMIN':'USER';
     }
 
-    public function albums(){
-        return $this->belongsToMany(Album::class,"user_album")->withPivot('isUserOwner')->withTimestamps();
+    public function reactionMedia(){
+        return $this->belongsToMany(Media::class,"reaction_media")->withPivot(["feeling_id"])->withTimestamps();
     }
+    public function albums(){
+        return $this->hasMany(Album::class,'user_id','id');
+    }
+
 
     public function mediaOwner(){
         return $this->hasMany(Media::class,'mediaOwner_id','id');
@@ -77,6 +81,6 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public function reportMedias(){
-        return $this->belongsToMany(Media::class,'report_media');
+        return $this->belongsToMany(Media::class,'media_report');
     }
 }

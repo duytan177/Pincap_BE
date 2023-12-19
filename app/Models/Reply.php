@@ -16,4 +16,8 @@ class Reply extends Model
         'comment_id',
         'content'
     ];
+
+    public function userRelies(){
+        return $this->belongsTo(User::class,'user_id');
+    }
 }

@@ -39,39 +39,50 @@ Route::group(['middleware' => 'api'], function ($router) {
         Route::post("report/{userId}/{mediaId}",[Usercontroller::class,'reportMedia']);
         Route::get("/search",[Usercontroller::class,'findUser']);
     });
-    Route::resource("user",Usercontroller::class);
+    Route::apiResource("user",Usercontroller::class);
 
 
     Route::group(['prefix' => 'media'],function ($router){
         Route::post("/download/1",[MediaController::class,'downloadMedias']);
         Route::get("/search",[MediaController::class,'findMediaByTag']);
     });
-    Route::resource("media",MediaController::class);
+    Route::apiResource("media",MediaController::class);
 
 
     Route::group(['prefix' => 'album'],function ($router){
         Route::post("/{album}/addUsers",[AlbumController::class,'addUsersToJoinAlbum']);
         Route::post("/archive",[AlbumController::class,'archive']);
     });
-    Route::resource("album",AlbumController::class);
+    Route::apiResource("album",AlbumController::class);
 
-    Route::resource("tag",TagController::class);
+    Route::apiResource("tag",TagController::class);
 
-    Route::resource("reportMedia",MediaReportController::class);
+    Route::apiResource("reportMedia",MediaReportController::class);
 
-    Route::resource("reasonReport",ReportReasonController::class);
+    Route::apiResource("reasonReport",ReportReasonController::class);
 
-    Route::resource("feelings",FeelingController::class);
+    Route::apiResource("feelings",FeelingController::class);
+    Route::post('/feelings/{id}',[FeelingController::class,'update']);
 
-    Route::resource("reactionMedia",ReactionMediaController::class);
+    Route::group(['prefix' => 'reactionMedia'],function ($router){
+        Route::get('/{id}',[ReactionMediaController::class,'show']);
+        Route::post("/",[ReactionMediaController::class,'store']);
+        Route::delete("/{id}",[ReactionMediaController::class,'delete']);
+    });
 
-    Route::resource("comments",CommentController::class);
+    Route::group(['prefix' => 'comments'],function ($router){
+        Route::get("/{id}",[CommentController::class,'show']);
+        Route::post("/",[CommentController::class,'store']);
+        Route::delete("/{id}",[CommentController::class,'destroy']);
+        Route::put("/{id}",[CommentController::class,'update']);
+    });
 
-    Route::resource("replies",ReplyController::class);
 
-    Route::resource("reactionComments",ReactionCommentController::class);
+    Route::apiResource("replies",ReplyController::class);
 
-    Route::resource("reactionReplies",ReactionReplyController::class);
+    Route::apiResource("reactionComments",ReactionCommentController::class);
+
+    Route::apiResource("reactionReplies",ReactionReplyController::class);
     //test thôi
     Route::post("/media-test/{media}",[MediaController::class,'update']);
 });

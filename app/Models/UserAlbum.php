@@ -17,7 +17,6 @@ class UserAlbum extends Model
         'id',
         'user_id',
         'album_id',
-        'isUserOner',
         'invitation_status'
     ];
     protected $hidden=[];
