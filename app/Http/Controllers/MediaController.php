@@ -181,10 +181,11 @@ class MediaController extends Controller
     public function createByImageAI(Request $request){
         $pythonAPI = "http://127.0.0.1:5000/createImageByAI";
         $data = [
-            'prompt' => "Cho tôi bức ảnh con con mèo hoang",
-            'size' => "1024x1024",
+            'prompt' =>  $request->prompt,
+            'size' => $request->size,
             'n' => 1
         ];
+        return $data;
         $response = Http::get($pythonAPI,$data);
 
         return response()->json($response->json(),200);
