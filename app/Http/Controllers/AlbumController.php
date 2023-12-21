@@ -6,20 +6,21 @@ use App\Models\Album;
 use App\Models\UserAlbum;
 use App\Repositories\AlbumRepo\AlbumRepo;
 use App\Repositories\MediaRepo\MediaRepo;
+use App\Repositories\UserAlbumRepo\UserAlbumRepo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Guid\Guid;
-use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 class AlbumController extends Controller
 {
     protected $albumRepo;
     protected $mediaRepo;
-    public function __construct(AlbumRepo $albumRepo,MediaRepo $mediaRepo)
+    protected $userAlbumRepo;
+    public function __construct(AlbumRepo $albumRepo,MediaRepo $mediaRepo,UserAlbumRepo $userAlbumRepo)
     {
         $this->albumRepo = $albumRepo;
         $this->mediaRepo = $mediaRepo;
+        $this->userAlbumRepo = $userAlbumRepo;
 //        $this->middleware('checkRole')->only(['store','index']);
 
     }
@@ -27,20 +28,13 @@ class AlbumController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $listAlbums = $this->albumRepo->paginate(5,['members','userOwner','medias']);
+        $user_id = $request->user_id;
+        $listAlbums = $this->albumRepo->findByField(["user_id"],$user_id,10,['members','userOwner','medias']);
         return response()->json([
             'listAlbums' => $listAlbums
         ],200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -65,7 +59,7 @@ class AlbumController extends Controller
      */
     public function show($id)
     {
-        $detailAlbum = $this->albumRepo->find($id,['medias']);
+        $detailAlbum = $this->albumRepo->find($id,['medias','members']);
         return response()->json([
             "detailAlbum" => $detailAlbum
         ],200);
@@ -137,20 +131,20 @@ class AlbumController extends Controller
 
     public function addUsersToJoinAlbum(Request $request,$album_id){
         //validator request before handle data
-        $validator = Validator::make($request->all(), [
-            'listUsers_id.*' => 'required|unique:user_album,user_id',
-        ]);
-        //check request has any errors then return messages errors
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ],400);
-        }
+//        $validator = Validator::make($request->all(), [
+//            'listUsers_id.*' => 'required|unique:user_album,user_id',
+//        ]);
+//        //check request has any errors then return messages errors
+//        if ($validator->fails()) {
+//            return response()->json([
+//                'message' => 'Validation error',
+//                'errors' => $validator->errors(),
+//            ],400);
+//        }
         $listUsersId = $request->listUsers_id;
         $album = $this->albumRepo->find($album_id);
         foreach ($listUsersId as $key => $listUserId){
-            $album->userOwner()->attach([
+            $album->members()->attach([
                 $listUserId => [
                     'id' => Guid::uuid4()->toString(),
                     "created_at"=> now()
@@ -161,7 +155,13 @@ class AlbumController extends Controller
             "message" => "invitation sent successfully"
         ],200);
     }
-
+    public function replyToJoinAlbum(Request $request,$id){
+        $data = $request->all();
+        $this->userAlbumRepo->update($id,$data);
+        return response()->json([
+            "message" => "Replied invitation to album"
+        ],200);
+    }
     public function archive(Request $request){
         $album_id = $request->input("album_id");
         $album = $this->albumRepo->find($album_id);
@@ -172,8 +172,8 @@ class AlbumController extends Controller
             ],200);
         }else{
             return response()->json([
-                "message"=>"fairled"
-            ],200);
+                "message"=>"faired"
+            ],400);
         }
     }
 }

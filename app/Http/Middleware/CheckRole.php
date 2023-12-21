@@ -17,7 +17,6 @@ class CheckRole
     public function handle(Request $request, Closure $next)
     {
         $userRole = $request->role;
-
         // Kiểm tra vai trò của người dùng
         if (Role::getValue($userRole) == "0") {
             return $next($request);

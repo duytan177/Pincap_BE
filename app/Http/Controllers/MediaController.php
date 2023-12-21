@@ -11,6 +11,7 @@ use App\Models\Media;
 use App\Repositories\MediaRepo\MediaRepo;
 use App\Repositories\TagRepo\TagRepo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -177,7 +178,17 @@ class MediaController extends Controller
         }
     }
 
+    public function createByImageAI(Request $request){
+        $pythonAPI = "http://127.0.0.1:5000/createImageByAI";
+        $data = [
+            'prompt' => "Cho tôi bức ảnh con con mèo hoang",
+            'size' => "1024x1024",
+            'n' => 1
+        ];
+        $response = Http::get($pythonAPI,$data);
 
+        return response()->json($response->json(),200);
+    }
 
 
     public function downloadMedias(Request $request){
@@ -214,4 +225,6 @@ class MediaController extends Controller
         }
         return $result;
     }
+
+
 }

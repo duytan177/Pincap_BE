@@ -18,9 +18,8 @@ class Usercontroller extends Controller
     {
         $this->userRepo = $userRepo;
     }
-    public function index()
+    public function index(Request $request)
     {
-        $listUser = $this->userRepo->all();
         $listUser = User::with(['albums','tags','mediaOwner','reportMedias'])->get();
         return response()->json([
             'listUser' => $listUser

@@ -39,18 +39,20 @@ Route::group(['middleware' => 'api'], function ($router) {
         Route::post("report/{userId}/{mediaId}",[Usercontroller::class,'reportMedia']);
         Route::get("/search",[Usercontroller::class,'findUser']);
     });
-    Route::apiResource("user",Usercontroller::class);
+    Route::apiResource("user",Usercontroller::class)->middleware(['auth']);
 
 
     Route::group(['prefix' => 'media'],function ($router){
         Route::post("/download/1",[MediaController::class,'downloadMedias']);
         Route::get("/search",[MediaController::class,'findMediaByTag']);
+        Route::get("/createAI/image",[MediaController::class,'createByImageAI']);
     });
     Route::apiResource("media",MediaController::class);
 
 
     Route::group(['prefix' => 'album'],function ($router){
         Route::post("/{album}/addUsers",[AlbumController::class,'addUsersToJoinAlbum']);
+        Route::post("/reply/{id}",[AlbumController::class,'replyToJoinAlbum']);
         Route::post("/archive",[AlbumController::class,'archive']);
     });
     Route::apiResource("album",AlbumController::class);

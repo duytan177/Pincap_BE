@@ -28,7 +28,7 @@ class Album extends Model
         return $value=='0'?'PRIVATE':'PUBLIC';
     }
     public function members(){
-        return $this->belongsToMany(User::class,"user_album")->withPivot("invitation_status")->withTimestamps();
+        return $this->belongsToMany(User::class,"user_album")->withPivot(["id","invitation_status"])->withTimestamps();
     }
 
     public function userOwner(){
