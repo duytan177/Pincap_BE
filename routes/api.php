@@ -54,6 +54,7 @@ Route::group(['middleware' => 'api'], function ($router) {
         Route::post("/{album}/addUsers",[AlbumController::class,'addUsersToJoinAlbum']);
         Route::post("/reply/{id}",[AlbumController::class,'replyToJoinAlbum']);
         Route::post("/archive",[AlbumController::class,'archive']);
+        Route::get("/listAlbum",[AlbumController::class,'listAlbum']);
     });
     Route::apiResource("album",AlbumController::class);
 

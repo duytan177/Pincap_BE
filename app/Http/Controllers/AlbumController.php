@@ -28,6 +28,12 @@ class AlbumController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function listAlbum(){
+        $listAlbums = $this->albumRepo->paginate(10,['userOwner']);
+        return response()->json([
+            'listAlbums' => $listAlbums
+        ],200);
+    }
     public function index(Request $request)
     {
         $user_id = $request->user_id;

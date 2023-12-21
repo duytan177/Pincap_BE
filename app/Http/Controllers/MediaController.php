@@ -56,10 +56,12 @@ class MediaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(MediaRequest $request)
+    public function store(Request $request)
     {
+
         //Get request file after upload to file AWS s3 and return url file
         $file = $request->file('medias');
+//        return $file->getClientOriginalName();
         $mediaURL = $this->uploadMediaToS3($file);
 //        //save medias to database in laravel
         $dataAll= $request->except(["medias",'album_id']);
@@ -99,7 +101,7 @@ class MediaController extends Controller
      */
     public function show($id)
     {
-        $media = $this->mediaRepo->find($id);
+        $media = $this->mediaRepo->find($id,['userOwner']);
         return response()->json([
             'media'=> $media
         ],200);
@@ -185,7 +187,6 @@ class MediaController extends Controller
             'size' => $request->size,
             'n' => 1
         ];
-        return $data;
         $response = Http::get($pythonAPI,$data);
 
         return response()->json($response->json(),200);
